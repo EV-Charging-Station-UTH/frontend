@@ -1,6 +1,26 @@
+"use client";
+
+import firebaseApp from "@/configs/firebase";
+import useFcmToken from "@/hooks/use-fcm-token";
+import { getMessaging, getToken } from "firebase/messaging";
 import Image from "next/image";
+import { useEffect } from "react";
 
 export default function Home() {
+  const { fcmToken } = useFcmToken();
+  const messaging = getMessaging(firebaseApp);
+  const getOK = async () => {
+    const fcmTokens = await getToken(messaging, {
+      vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY, // chính là VAPID key bạn lấy
+    });
+    console.log("OKSA", fcmTokens)
+  };
+  useEffect(() => {
+    getOK()
+  });
+
+  console.log("FCM token:", fcmToken);
+  console.log("TOKEN", fcmToken);
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -51,7 +71,7 @@ export default function Home() {
             Deploy Now
           </a>
           <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/8 px-5 transition-colors hover:border-transparent hover:bg-black/4 dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
             href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
             target="_blank"
             rel="noopener noreferrer"
