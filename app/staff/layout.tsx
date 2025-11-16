@@ -1,38 +1,38 @@
-'use client';
+'use client'
 
-import Header from '@/components/header';
-import Sidebar from '@/components/sidebar';
-import { useAuth } from '@/hooks/use-auth';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Sidebar } from '@/components/layout/sidebar'
+import { Header } from '@/components/layout/header'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function StaffLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const { user } = useAuth();
-  const router = useRouter();
+  const { isAuthenticated } = useAuth()
+  const router = useRouter()
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/staff/login');
-    }
-  }, [user, router]);
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     router.push('/staff/login')
+  //   }
+  // }, [isAuthenticated, router])
 
-  if (!user) {
-    return null;
-  }
+  // if (!isAuthenticated) {
+  //   return null
+  // }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col">
         <Header />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900">
+        <main className="flex-1 overflow-auto p-6">
           {children}
         </main>
       </div>
     </div>
-  );
+  )
 }
