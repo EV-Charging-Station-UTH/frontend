@@ -6,10 +6,8 @@ interface LoginPayload {
   password: string;
 }
 
-const login = async (payload: LoginPayload) => {
+export const login = async (payload: LoginPayload) => {
   const response = await instanceAxios.post(`${API_ENDPOINTS.LOGIN}`, payload);
   console.log("respone login", response);
   return response;
 };
-
-export default { login };
