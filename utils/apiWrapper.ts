@@ -22,7 +22,7 @@ export async function unwrapResponse<T>(promise: Promise<any>): Promise<T> {
   } catch (err) {
     if (axios.isAxiosError(err)) {
       const axiosErr = err as AxiosError;
-      const msg = axiosErr.response?.data?.message ?? axiosErr.message;
+      const msg = (axiosErr.response?.data as any)?.message ?? axiosErr.message;
       throw new Error(msg);
     }
     throw err;
