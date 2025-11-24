@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -10,6 +10,9 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
+import useFcmToken from '@/hooks/use-fcm-token'
+import { getMessaging, getToken } from 'firebase/messaging'
+import firebaseApp from '@/configs/firebase'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -38,6 +41,21 @@ export default function LoginPage() {
     
     router.push('/staff/dashboard')
   }
+
+  const { fcmToken } = useFcmToken();
+    const messaging = getMessaging(firebaseApp);
+    const getOK = async () => {
+      const fcmTokens = await getToken(messaging, {
+        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY, // chính là VAPID key bạn lấy
+      });
+      console.log("OKSA", fcmTokens)
+    };
+    useEffect(() => {
+      getOK()
+    });
+  
+    console.log("FCM token:", fcmToken);
+    console.log("TOKEN", fcmToken);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-green-50 to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900">
