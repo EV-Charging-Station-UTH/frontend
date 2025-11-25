@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { StationItem } from "@/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,121 +25,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Icon } from "@iconify/react";
-
-const dataStations: StationItem[] = [
-  {
-    station_id: "a8e7b5b0-9cf5-4f24-9bc8-4981da72e662",
-    name: "EV Station 01",
-    address: "123 Nguyễn Trãi",
-    ward: "Phường 5",
-    longitude: 106.6893,
-    latitude: 10.7769,
-    status: "available",
-    total_power: 180.0,
-    min_power: 7.0,
-    max_power: 60.0,
-    min_price: 1500,
-    max_price: 3500,
-  },
-  {
-    station_id: "b6b333a4-0144-450c-88c6-3d2b42f8fd93",
-    name: "EV Station 02",
-    address: "45 Điện Biên Phủ",
-    ward: "Phường 6",
-    longitude: 106.7001,
-    latitude: 10.779,
-    status: "maintenance",
-    total_power: 90.0,
-    min_power: 7.0,
-    max_power: 30.0,
-    min_price: 1200,
-    max_price: 3000,
-  },
-  {
-    station_id: "c1f923bb-4f66-42a3-9cd4-99a0e5e303aa",
-    name: "EV Station 03",
-    address: "200 Lê Lợi",
-    ward: "Phường 1",
-    longitude: 106.7031,
-    latitude: 10.7722,
-    status: "charging",
-    total_power: 120.0,
-    min_power: 7.0,
-    max_power: 60.0,
-    min_price: 1800,
-    max_price: 3200,
-  },
-  {
-    station_id: "d2e5aa92-9621-4fd6-a44d-532f6d90a955",
-    name: "EV Station 04",
-    address: "80 Võ Thị Sáu",
-    ward: "Phường 7",
-    longitude: 106.6955,
-    latitude: 10.7852,
-    status: "available",
-    total_power: 150.0,
-    min_power: 7.0,
-    max_power: 50.0,
-    min_price: 1600,
-    max_price: 3400,
-  },
-  {
-    station_id: "e9c0f33f-0c7c-4c24-8d75-abc3bdb8e317",
-    name: "EV Station 05",
-    address: "12 Nguyễn Huệ",
-    ward: "Phường Bến Nghé",
-    longitude: 106.7059,
-    latitude: 10.7729,
-    status: "charging",
-    total_power: 200.0,
-    min_power: 7.0,
-    max_power: 60.0,
-    min_price: 1700,
-    max_price: 3600,
-  },
-  {
-    station_id: "f6b22931-564e-44b8-b15e-6b7f27e3caa2",
-    name: "EV Station 06",
-    address: "300 Pasteur",
-    ward: "Phường 8",
-    longitude: 106.6905,
-    latitude: 10.7871,
-    status: "maintenance",
-    total_power: 80.0,
-    min_power: 7.0,
-    max_power: 22.0,
-    min_price: 1300,
-    max_price: 2500,
-  },
-  {
-    station_id: "aa871d8f-3b9e-4468-91dc-8d3c7012a3f2",
-    name: "EV Station 07",
-    address: "50 Trần Hưng Đạo",
-    ward: "Phường Cầu Kho",
-    longitude: 106.689,
-    latitude: 10.758,
-    status: "available",
-    total_power: 110.0,
-    min_power: 7.0,
-    max_power: 40.0,
-    min_price: 1400,
-    max_price: 2900,
-  },
-  {
-    station_id: "cde4a944-6fa9-4df2-a312-2c7aaf6cbf99",
-    name: "EV Station 08",
-    address: "90 Hoàng Văn Thụ",
-    ward: "Phường 4",
-    longitude: 106.6623,
-    latitude: 10.7973,
-    status: "charging",
-    total_power: 175.0,
-    min_power: 7.0,
-    max_power: 60.0,
-    min_price: 1500,
-    max_price: 3300,
-  },
-];
+import { StationItem } from "@/types/station";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useRouter } from "next/navigation";
 
 const statusOptions = [
   { value: "all", label: "Tất cả" },
@@ -152,6 +47,23 @@ const statusOptions = [
 export default function ChargingStationsPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [search, setSearch] = useState("");
+  const [dataStations, setDataStations] = useState<StationItem[]>([]);
+  const [openReport, setOpenReport] = useState(false);
+  const [selectedStation, setSelectedStation] = useState<StationItem | null>(
+    null
+  );
+  const router = useRouter()
+
+  const [report, setReport] = useState({
+    issueType: "",
+    description: "",
+    severity: "low",
+  });
+
+  const openReportModal = (station: StationItem) => {
+    setSelectedStation(station);
+    setOpenReport(true);
+  };
 
   const filteredStations = dataStations.filter((st) => {
     const matchStatus =
@@ -161,6 +73,36 @@ export default function ChargingStationsPage() {
       st.station_id.toLowerCase().includes(search.toLowerCase());
     return matchStatus && matchSearch;
   });
+
+  const submitReport = async () => {
+    if (!selectedStation) return;
+
+    const payload = {
+      stationId: selectedStation.station_id,
+      reportedBy: "00000000-0000-0000-0000-000000000001", // Tạm fix
+      issueType: report.issueType,
+      description: report.description,
+      severity: report.severity,
+      reportedAt: new Date(),
+    };
+
+    await fetch("/api/maintenance-report", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    setOpenReport(false);
+  };
+
+  useEffect(() => {
+    fetch("/mocks/stations.json")
+      .then((res) => res.json())
+      .then((data) => {
+        setDataStations(data);
+      })
+      .catch((err) => console.error(err));
+  }, []);
 
   return (
     <div className="p-6 space-y-4">
@@ -198,6 +140,7 @@ export default function ChargingStationsPage() {
             <TableHead>Trạng thái</TableHead>
             <TableHead>Tổng công suất</TableHead>
             <TableHead>Khoảng giá</TableHead>
+            <TableHead>Bộ sạc</TableHead>
             <TableHead>Tọa độ</TableHead>
             <TableHead>Thao tác</TableHead>
           </TableRow>
@@ -236,7 +179,7 @@ export default function ChargingStationsPage() {
                 {st.min_price.toLocaleString()} –{" "}
                 {st.max_price.toLocaleString()} đ/kWh
               </TableCell>
-
+              <TableCell>{st.chargers.length}</TableCell>
               <TableCell>
                 {st.latitude}, {st.longitude}
               </TableCell>
@@ -249,8 +192,10 @@ export default function ChargingStationsPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Xem</DropdownMenuItem>
-                    <DropdownMenuItem>Báo cáo</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push(`/staff/charging-points/${st.station_id}`)}>Xem</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openReportModal(st)}>
+                      Báo cáo
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
@@ -258,6 +203,67 @@ export default function ChargingStationsPage() {
           ))}
         </TableBody>
       </Table>
+      <Dialog open={openReport} onOpenChange={setOpenReport}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Báo cáo trạm sạc</DialogTitle>
+            <DialogDescription>
+              Gửi báo cáo sự cố cho trạm:{" "}
+              <span className="font-medium">{selectedStation?.name}</span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-2">
+            <div>
+              <label className="text-sm font-medium">Loại lỗi</label>
+              <Input
+                placeholder="Ví dụ: cổng sạc lỗi, mất điện..."
+                value={report.issueType}
+                onChange={(e) =>
+                  setReport({ ...report, issueType: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Mô tả</label>
+              <textarea
+                className="w-full border rounded-md p-2 text-sm"
+                rows={4}
+                value={report.description}
+                onChange={(e) =>
+                  setReport({ ...report, description: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Mức độ vấn đề</label>
+              <Select
+                value={report.severity}
+                onValueChange={(v) => setReport({ ...report, severity: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn mức độ" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Thấp</SelectItem>
+                  <SelectItem value="medium">Trung bình</SelectItem>
+                  <SelectItem value="high">Cao</SelectItem>
+                  <SelectItem value="critical">Nguy hiểm</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setOpenReport(false)}>
+              Hủy
+            </Button>
+            <Button onClick={submitReport}>Gửi báo cáo</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

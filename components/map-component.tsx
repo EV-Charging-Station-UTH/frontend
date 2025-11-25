@@ -7,12 +7,10 @@ import {
   Marker,
   Popup,
   useMap,
-  useMapEvents,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { StationItem } from "@/types";
-import { Button } from "./ui/button";
+import { StationItem } from "@/types/station";
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -181,6 +179,12 @@ export default function MapComponent({
                   <span className="text-muted-foreground">Price:</span>
                   <span>
                     {station.min_price}đ - {station.max_price}đ
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Charger:</span>
+                  <span>
+                    {station.chargers.length}
                   </span>
                 </div>
                 <div className="flex justify-between">
