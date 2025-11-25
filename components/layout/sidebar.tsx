@@ -10,12 +10,14 @@ import {
   Settings,
   Power,
   LogOut,
-  Home
+  Home,
+  BatteryCharging
 } from 'lucide-react'
 
 const menuItems = [
   { href: '/staff/dashboard', label: 'Dashboard', icon: Home },
   { href: '/staff/charging-points', label: 'Charging Points', icon: Power },
+  { href: '/staff/sessions', label: 'Sessions', icon: BatteryCharging },
   { href: '/staff/payments', label: 'Payments', icon: CreditCard },
   { href: '/staff/reports', label: 'Reports', icon: BarChart3 },
   { href: '/staff/map', label: 'Map View', icon: MapPin },
