@@ -23,11 +23,7 @@ export const AdminService = {
       instanceAxios.put(`/stations/${id}`, payload)
     );
   },
-  deleteStation: async (id: number) => {
-    return unwrapResponse<{ success: boolean }>(
-      instanceAxios.delete(`/stations/${id}`)
-    );
-  },
+  
   controlStation: async (id: number, action: "on" | "off") => {
     return unwrapResponse<{ success: boolean }>(
       instanceAxios.post(`/stations/${id}/control`, { stationId: id, action })
